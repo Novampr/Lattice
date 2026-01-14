@@ -8,15 +8,22 @@ A Simple (for now) Discord chat bridge for Hytale.
 
 Put the jar file into the `mods` folder.
 
-Then run the server with mod installed to generate the config file, it will propbaly complain that the discord token is invalid, don't panic it's normal we will set it in the now generated config under `mods/me.theclashfruit_Lattice/Lattice.json`.
+Then run the server with mod installed to generate the config file, it should generate it at `mods/TheClashFruit_Lattice/Lattice.json`.
 
 The config file should look something like this:
 
 ```json
 {
-  "Token": "your_token_here",
-  "ChannelId": "",
-  "WebhookId": "",
+  "Enabled": false,
+  "Discord": {
+    "Token": "your_token_here",
+    "ChannelId": "",
+    "WebhookId": "",
+    "Messages": {
+      "Join": "%s joined %s.",
+      "Leave": "%s left."
+    }
+  },
   "ChatPrefix": "[Discord]",
   "ChatPrefixColour": "#5865F2"
 }
@@ -32,7 +39,7 @@ Create your channel and copy its id into the channel id in the config. Then go i
 
 ### 4. Restart The Server
 
-Restart the server and chat with people on Discord :3
+Set `Enabled` to true and restart the server and chat with people on Discord :3
 
 (I suck at writing docs)
 
