@@ -2,6 +2,8 @@ package me.theclashfruit.lattice;
 
 import com.hypixel.hytale.logger.HytaleLogger;
 import com.hypixel.hytale.server.core.event.events.player.PlayerChatEvent;
+import com.hypixel.hytale.server.core.event.events.player.PlayerDisconnectEvent;
+import com.hypixel.hytale.server.core.event.events.player.PlayerReadyEvent;
 import com.hypixel.hytale.server.core.plugin.JavaPlugin;
 import com.hypixel.hytale.server.core.plugin.JavaPluginInit;
 import com.hypixel.hytale.server.core.universe.Universe;
@@ -13,7 +15,7 @@ import discord4j.core.event.domain.lifecycle.ReadyEvent;
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.entity.Message;
 import discord4j.core.object.entity.User;
-import me.theclashfruit.lattice.events.ChatEvent;
+import me.theclashfruit.lattice.events.PlayerEvents;
 import me.theclashfruit.lattice.util.LatticeConfig;
 import reactor.core.publisher.Mono;
 
@@ -40,7 +42,9 @@ public class LatticePlugin extends JavaPlugin {
         super.setup();
         config.save();
 
-        this.getEventRegistry().registerGlobal(PlayerChatEvent.class, ChatEvent::onPlayerChat);
+        this.getEventRegistry().registerGlobal(PlayerChatEvent.class, PlayerEvents::onPlayerChat);
+        this.getEventRegistry().registerGlobal(PlayerReadyEvent.class, PlayerEvents::onPlayerReady);
+        this.getEventRegistry().registerGlobal(PlayerDisconnectEvent.class, PlayerEvents::onPlayerDisconnect);
 
         client = DiscordClient.create(config.get().token);
         client.withGateway(gateway -> {
