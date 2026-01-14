@@ -1,0 +1,34 @@
+plugins {
+    id 'java'
+}
+
+version = project.mod_version
+group = project.maven_group
+
+base {
+    archivesName = project.archives_base_name
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation(files("../2026.01.13-50e69c385/Server/HytaleServer.jar"))
+}
+
+processResources {
+    inputs.property "version", project.version
+    inputs.property "name", project.mod_name
+    inputs.property "description", project.mod_description
+    inputs.property "hytale_version", project.hytale_version
+
+    filteringCharset "UTF-8"
+
+    filesMatching("manifest.json") {
+        expand "version": project.version.toString(),
+                "name": project.mod_name,
+                "description": project.mod_description,
+                "hytale_version": project.hytale_version
+    }
+}
