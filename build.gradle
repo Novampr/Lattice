@@ -19,6 +19,7 @@ dependencies {
     // Hytale Server (API)
     compileOnly(files("../2026.01.13-50e69c385/Server/HytaleServer.jar"))
 
+    // TODO: replace with something smaller?? (why is it 21MiB???)
     implementation "com.discord4j:discord4j-core:$discord4j_version"
 }
 
@@ -39,6 +40,7 @@ processResources {
 }
 
 shadowJar {
+    // TODO: better relocation for other stuff
     relocate 'com.discord4j', 'me.theclashfruit.shadow.com.discord4j'
     relocate 'discord4j', 'me.theclashfruit.shadow.discord4j'
 }

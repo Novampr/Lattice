@@ -10,12 +10,14 @@ import discord4j.core.object.entity.channel.TextChannel;
 import me.theclashfruit.lattice.LatticePlugin;
 import reactor.core.publisher.Mono;
 
+import static me.theclashfruit.lattice.LatticePlugin.LOGGER;
+
 public class PlayerEvents {
     public static void onPlayerChat(PlayerChatEvent event) {
         PlayerRef sender = event.getSender();
         String content = event.getContent();
 
-        String webhook = LatticePlugin.config.get().webhook_id;
+        String webhook = LatticePlugin.config.get().discord.webhook_id;
 
         LatticePlugin.client
                 .withGateway((gateway) -> {
@@ -24,7 +26,7 @@ public class PlayerEvents {
                                 try {
                                     return hook.execute().withUsername(sender.getUsername()).withContent(content);
                                 } catch (Exception e) {
-                                    LatticePlugin.LOGGER.atSevere().log("Error while executing webhook", e);
+                                    LOGGER.atSevere().log("Error while executing webhook", e);
                                     return Mono.error(e);
                                 }
                             }).then();
@@ -34,26 +36,34 @@ public class PlayerEvents {
     public static void onPlayerReady(PlayerReadyEvent event) {
         Player player = event.getPlayer();
 
-        LatticePlugin.client.withGateway((gateway) -> gateway
-                .getChannelById(Snowflake
-                        .of(LatticePlugin.config.get().channel_id)
-                )
-                .flatMap(ch -> ((TextChannel) ch)
-                        .createMessage(player.getDisplayName() + " joined."))
-                )
-                .subscribe();
+        if(player.getWorld() != null) {
+            String joinMessage = String.format(LatticePlugin.config.get().discord.messages.join, player.getDisplayName(), player.getWorld().getName());
+
+            LatticePlugin.client.withGateway((gateway) -> gateway
+                            .getChannelById(Snowflake
+                                    .of(LatticePlugin.config.get().discord.channel_id)
+                            )
+                            .flatMap(ch -> ((TextChannel) ch)
+                                    .createMessage(joinMessage)
+                            )
+                    ).subscribe();
+        } else {
+            LOGGER.atWarning().log("Player's world is null.");
+        }
     }
 
     public static void onPlayerDisconnect(PlayerDisconnectEvent event) {
         PlayerRef player = event.getPlayerRef();
 
+        String quitMessage = String.format(LatticePlugin.config.get().discord.messages.leave, player.getUsername());
+
         LatticePlugin.client.withGateway((gateway) -> gateway
                         .getChannelById(Snowflake
-                                .of(LatticePlugin.config.get().channel_id)
+                                .of(LatticePlugin.config.get().discord.channel_id)
                         )
                         .flatMap(ch -> ((TextChannel) ch)
-                                .createMessage(player.getUsername() + " left."))
-                )
-                .subscribe();
+                                .createMessage(quitMessage)
+                        )
+                ).subscribe();
     }
 }

@@ -23,7 +23,6 @@ import javax.annotation.Nonnull;
 
 public class LatticePlugin extends JavaPlugin {
     public static DiscordClient client;
-    public static GatewayDiscordClient gateway;
 
     public static Config<LatticeConfig> config;
 
@@ -42,14 +41,15 @@ public class LatticePlugin extends JavaPlugin {
         super.setup();
         config.save();
 
+        // do not start the bot if it's disabled
+        if (!config.get().enabled) return;
+
         this.getEventRegistry().registerGlobal(PlayerChatEvent.class, PlayerEvents::onPlayerChat);
         this.getEventRegistry().registerGlobal(PlayerReadyEvent.class, PlayerEvents::onPlayerReady);
         this.getEventRegistry().registerGlobal(PlayerDisconnectEvent.class, PlayerEvents::onPlayerDisconnect);
 
-        client = DiscordClient.create(config.get().token);
+        client = DiscordClient.create(config.get().discord.token);
         client.withGateway(gateway -> {
-            LatticePlugin.gateway = gateway;
-
             gateway.getEventDispatcher()
                     .on(ReadyEvent.class)
                     .subscribe(e ->
@@ -70,7 +70,7 @@ public class LatticePlugin extends JavaPlugin {
                         }
 
                         return msg.getChannel()
-                                .filter(ch -> ch.getId().equals(Snowflake.of(config.get().channel_id)))
+                                .filter(ch -> ch.getId().equals(Snowflake.of(config.get().discord.channel_id)))
                                 .flatMap(ch ->
                                         msg.getAuthorAsMember().doOnNext(member -> {
                                             LOGGER.atInfo().log(
@@ -97,8 +97,7 @@ public class LatticePlugin extends JavaPlugin {
                                             Universe.get().sendMessage(joined);
                                         })
                                 );
-                    })
-                    .subscribe();
+                    }).subscribe();
 
             return Mono.never();
         }).subscribe();
