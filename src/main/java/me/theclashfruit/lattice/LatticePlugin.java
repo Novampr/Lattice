@@ -13,6 +13,7 @@ import discord4j.core.DiscordClient;
 import discord4j.core.GatewayDiscordClient;
 import discord4j.core.event.domain.lifecycle.ReadyEvent;
 import discord4j.core.event.domain.message.MessageCreateEvent;
+import discord4j.core.object.entity.Attachment;
 import discord4j.core.object.entity.Message;
 import discord4j.core.object.entity.User;
 import me.theclashfruit.lattice.events.PlayerEvents;
@@ -20,6 +21,12 @@ import me.theclashfruit.lattice.util.LatticeConfig;
 import reactor.core.publisher.Mono;
 
 import javax.annotation.Nonnull;
+import java.awt.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 public class LatticePlugin extends JavaPlugin {
     public static DiscordClient client;
@@ -80,6 +87,38 @@ public class LatticePlugin extends JavaPlugin {
                                                     msg.getContent()
                                             );
 
+                                            List<Attachment> attachments = msg.getAttachments();
+                                            Map<String, String> map = attachments.stream()
+                                                            .collect(Collectors.toMap(
+                                                                    a -> "[" + a.getFilename() + "]",
+                                                                    Attachment::getUrl
+                                                            ));
+
+                                            StringBuilder builder = new StringBuilder();
+
+                                            if (!msg.getContent().isEmpty()) {
+                                                builder.append(" ");
+                                                builder.append(msg.getContent());
+                                            }
+
+                                            List<com.hypixel.hytale.server.core.Message> msgs =
+                                                    attachments.stream()
+                                                            .map(a ->
+                                                                    com.hypixel.hytale.server.core.Message.join(
+                                                                        com.hypixel.hytale.server.core.Message
+                                                                                .raw("[" + a.getFilename() + "]")
+                                                                                .color(Color.CYAN)
+                                                                                .link(a.getUrl()),
+                                                                        com.hypixel.hytale.server.core.Message.raw(" ")
+                                                                    )
+                                                            )
+                                                            .toList();
+
+                                            var named = com.hypixel.hytale.server.core.Message.join(
+                                                    com.hypixel.hytale.server.core.Message.raw(" "),
+                                                    com.hypixel.hytale.server.core.Message.join(msgs.toArray(new com.hypixel.hytale.server.core.Message[0]))
+                                            );
+
                                             var prefix =
                                                     com.hypixel.hytale.server.core.Message
                                                             .raw(config.get().chat_prefix)
@@ -90,8 +129,9 @@ public class LatticePlugin extends JavaPlugin {
                                                     prefix,
                                                     com.hypixel.hytale.server.core.Message.raw(" "),
                                                     com.hypixel.hytale.server.core.Message.raw(member.getDisplayName()),
-                                                    com.hypixel.hytale.server.core.Message.raw(": "),
-                                                    com.hypixel.hytale.server.core.Message.raw(msg.getContent())
+                                                    com.hypixel.hytale.server.core.Message.raw(":"),
+                                                    com.hypixel.hytale.server.core.Message.raw(builder.toString()),
+                                                    named
                                             );
 
                                             Universe.get().sendMessage(joined);

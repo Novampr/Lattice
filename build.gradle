@@ -1,7 +1,7 @@
 plugins {
     id 'java'
 
-    id 'com.gradleup.shadow' version '9.3.1'
+        id 'com.gradleup.shadow' version '9.3.1'
 }
 
 version = project.mod_version
@@ -40,6 +40,8 @@ processResources {
 }
 
 shadowJar {
+    archiveClassifier = ''
+
     // TODO: better relocation for other stuff
     relocate 'com.discord4j', 'me.theclashfruit.shadow.com.discord4j'
     relocate 'discord4j', 'me.theclashfruit.shadow.discord4j'
