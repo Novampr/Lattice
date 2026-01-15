@@ -10,6 +10,8 @@ import discord4j.core.object.entity.channel.TextChannel;
 import me.theclashfruit.lattice.LatticePlugin;
 import reactor.core.publisher.Mono;
 
+import java.net.URI;
+
 import static me.theclashfruit.lattice.LatticePlugin.LOGGER;
 
 public class PlayerEvents {
@@ -18,10 +20,24 @@ public class PlayerEvents {
         String content = event.getContent();
 
         String webhook = LatticePlugin.config.get().discord.webhook_id;
+        // check if someone put the whole webhook url and parse it
+        try {
+            var webhookUrl = new URI(webhook);
+            if (webhookUrl.getHost().equals("discord.com")) {
+                var segments = webhookUrl.getPath().split("/");
+                if (segments.length >= 3)
+                    webhook = segments[2];
+            } else {
+                throw new Exception("Webhook is not just the id or a valid discord.com webhook url.");
+            }
+        } catch (Exception e) {
+            LOGGER.atWarning().log(e.getMessage());
+        }
 
+        String finalWebhook = webhook;
         LatticePlugin.client
                 .withGateway((gateway) -> {
-                    return gateway.getWebhookById(Snowflake.of(webhook))
+                    return gateway.getWebhookById(Snowflake.of(finalWebhook))
                             .flatMap(hook -> {
                                 try {
                                     return hook.execute().withUsername(sender.getUsername()).withContent(content);
