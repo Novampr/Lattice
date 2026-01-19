@@ -7,6 +7,7 @@ import com.hypixel.hytale.server.core.universe.Universe;
 import me.theclashfruit.lattice.LatticePlugin;
 import me.theclashfruit.lattice.util.LinkUtil;
 import net.dv8tion.jda.api.entities.User;
+import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.events.session.ReadyEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
@@ -17,7 +18,9 @@ import org.jetbrains.annotations.NotNull;
 import javax.annotation.Nonnull;
 
 import java.awt.*;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.Objects;
 
 import static me.theclashfruit.lattice.LatticePlugin.LOGGER;
 import static me.theclashfruit.lattice.LatticePlugin.config;
@@ -35,7 +38,7 @@ public class BotEventListener extends ListenerAdapter {
             // Register global commands.
             jda.updateCommands().addCommands(
                     Commands.slash("link", "Link your Hytale account with your Discord account.")
-                            .addOption(OptionType.STRING, "code", "The code shown in the Hytale chat."),
+                            .addOption(OptionType.STRING, "code", "The code shown in the Hytale chat.", true),
                     Commands.slash("unlink", "Unlink your Discord account from your Hytale account.")
             ).queue();
         } else {
@@ -43,7 +46,7 @@ public class BotEventListener extends ListenerAdapter {
             try {
                 jda.getGuildById(conf.discord.guild_id).updateCommands().addCommands(
                         Commands.slash("link", "Link your Hytale account with your Discord account.")
-                                .addOption(OptionType.STRING, "code", "The code shown in the Hytale chat."),
+                                .addOption(OptionType.STRING, "code", "The code shown in the Hytale chat.", true),
                         Commands.slash("unlink", "Unlink your Discord account from your Hytale account.")
                 ).queue();
             } catch (Exception e) {
@@ -131,5 +134,43 @@ public class BotEventListener extends ListenerAdapter {
         }
 
         return false;
+    }
+
+    @Override
+    public void onSlashCommandInteraction(SlashCommandInteractionEvent event) {
+        String name = event.getName();
+
+        if (name.equals("link")) {
+            String code = Objects.requireNonNull(event.getOption("code")).getAsString();
+
+            PlayerRef ref = LinkUtil.getPlayerFromCode(code);
+            if (ref == null)
+                event.reply("Invalid code.").setEphemeral(true).queue();
+            else {
+                Map<String, String> connections = LatticePlugin.connections.get().connections;
+                connections.put(ref.getUuid().toString(), event.getUser().getId());
+                LatticePlugin.connections.save();
+
+                LinkUtil.removeCode(code);
+
+                event.reply("Successfully linked Hytale account.").setEphemeral(true).queue();
+                ref.sendMessage(Message.raw("Successfully linked Discord account.").color(Color.GREEN).bold(true));
+            }
+        } else if (name.equals("unlink")) {
+            Map<String, String> connections = LatticePlugin.connections.get().connections;
+
+            if (connections.containsValue(event.getUser().getId())) {
+                for (Map.Entry<String, String> entry : connections.entrySet()) {
+                    if (event.getUser().getId().equals(entry.getValue())) {
+                        connections.remove(entry.getKey());
+                        LatticePlugin.connections.save();
+                    }
+                }
+
+                event.reply("Successfully unlinked the Hytale account.").setEphemeral(true).queue();
+            } else {
+                event.reply("You don't have a Hytale account linked.").setEphemeral(true).queue();
+            }
+        }
     }
 }

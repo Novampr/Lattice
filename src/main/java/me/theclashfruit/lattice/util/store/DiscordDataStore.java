@@ -13,8 +13,14 @@ public class DiscordDataStore {
     public static final BuilderCodec<DiscordDataStore> CODEC = BuilderCodec.builder(DiscordDataStore.class, DiscordDataStore::new)
             .append(
                     new KeyedCodec<>("_Note", BuilderCodec.STRING),
-                    (config, value, info) -> config._note = "DO NOT MODIFY THIS FILE.", // do not ~~redeem~~ modify sir
+                    (config, value, info) -> config._note = "DO NOT MODIFY THIS FILE.", // do not ~~redeem~~ modify ma'am
                     (config, info) -> config._note
+            )
+            .add()
+            .append(
+                    new KeyedCodec<>("Webhook", BuilderCodec.STRING),
+                    (config, value, info) -> config.webhook = value,
+                    (config, info) -> config.webhook
             )
             .add()
             .append(
@@ -41,6 +47,7 @@ public class DiscordDataStore {
     private String _note = "DO NOT MODIFY THIS FILE.";
 
     public Map<String, String> connections = new HashMap<>();
+    public String webhook = "";
 
     public static class Connection {
         public static final BuilderCodec<Connection> CODEC = BuilderCodec.builder(Connection.class, Connection::new)
