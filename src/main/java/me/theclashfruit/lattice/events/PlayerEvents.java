@@ -9,6 +9,7 @@ import me.theclashfruit.lattice.LatticePlugin;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 
 import java.net.URI;
+import java.util.Map;
 
 import static me.theclashfruit.lattice.LatticePlugin.LOGGER;
 import static me.theclashfruit.lattice.LatticePlugin.jda;
@@ -39,8 +40,21 @@ public class PlayerEvents {
             LOGGER.atWarning().log(e.getMessage());
         }
 
+        Map<String, String> connections = LatticePlugin.connections.get().connections;
+
         var hook = jda.retrieveWebhookById(webhook);
-        hook.flatMap(h -> h.sendMessage(content).setUsername(sender.getUsername())).queue();
+        if (connections.containsKey(sender.getUuid().toString())) {
+            var user = jda.getUserById(connections.get(sender.getUuid().toString()));
+            if (user == null) {
+                hook.flatMap(h -> h.sendMessage(content).setUsername(sender.getUsername())).queue();
+
+                return;
+            }
+
+            hook.flatMap(h -> h.sendMessage(content).setUsername(user.getEffectiveName()).setAvatarUrl(user.getAvatarUrl())).queue();
+        } else {
+            hook.flatMap(h -> h.sendMessage(content).setUsername(sender.getUsername())).queue();
+        }
     }
 
     public static void onPlayerReady(PlayerReadyEvent event) {
