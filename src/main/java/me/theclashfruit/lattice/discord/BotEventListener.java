@@ -1,5 +1,6 @@
 package me.theclashfruit.lattice.discord;
 
+import com.hypixel.hytale.common.util.StringUtil;
 import com.hypixel.hytale.server.core.Message;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.Universe;
@@ -9,6 +10,8 @@ import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.events.session.ReadyEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import net.dv8tion.jda.api.interactions.commands.OptionType;
+import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
@@ -17,11 +20,36 @@ import java.awt.*;
 import java.util.Map;
 
 import static me.theclashfruit.lattice.LatticePlugin.LOGGER;
+import static me.theclashfruit.lattice.LatticePlugin.config;
 
 public class BotEventListener extends ListenerAdapter {
     @Override
     public void onReady(@Nonnull ReadyEvent event) {
-        LOGGER.atInfo().log("Logged in as %s#%s", event.getJDA().getSelfUser().getName(), event.getJDA().getSelfUser().getDiscriminator());
+        var jda = event.getJDA();
+        var conf = config.get();
+
+        LOGGER.atInfo().log("Logged in as %s#%s", jda.getSelfUser().getName(), jda.getSelfUser().getDiscriminator());
+
+        // Register slash commands on Discord for guild or global based on if guild_id is set in the config.
+        if (conf.discord.guild_id.isEmpty() || !StringUtil.isNumericString(conf.discord.guild_id)) {
+            // Register global commands.
+            jda.updateCommands().addCommands(
+                    Commands.slash("link", "Link your Hytale account with your Discord account.")
+                            .addOption(OptionType.STRING, "code", "The code shown in the Hytale chat."),
+                    Commands.slash("unlink", "Unlink your Discord account from your Hytale account.")
+            ).queue();
+        } else {
+            // Register guild commands.
+            try {
+                jda.getGuildById(conf.discord.guild_id).updateCommands().addCommands(
+                        Commands.slash("link", "Link your Hytale account with your Discord account.")
+                                .addOption(OptionType.STRING, "code", "The code shown in the Hytale chat."),
+                        Commands.slash("unlink", "Unlink your Discord account from your Hytale account.")
+                ).queue();
+            } catch (Exception e) {
+                LOGGER.atWarning().withCause(e).log("Failed to create guild commands, you may have provided an invalid guild id.");
+            }
+        }
     }
 
     @Override

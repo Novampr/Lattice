@@ -50,6 +50,12 @@ public class LatticeConfig {
                 )
                 .add()
                 .append(
+                        new KeyedCodec<>("GuildId", BuilderCodec.STRING),
+                        (config, value, info) -> config.guild_id = value,
+                        (config, info) -> config.guild_id
+                )
+                .add()
+                .append(
                         new KeyedCodec<>("ChannelId", BuilderCodec.STRING),
                         (config, value, info) -> config.channel_id = value,
                         (config, info) -> config.channel_id
@@ -72,6 +78,8 @@ public class LatticeConfig {
         public DiscordConfig() {}
 
         public String token = "your_token_here";
+
+        public String guild_id = "";
         public String channel_id = "";
         public String webhook_id = "";
 

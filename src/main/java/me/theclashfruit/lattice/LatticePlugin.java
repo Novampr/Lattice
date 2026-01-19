@@ -1,5 +1,6 @@
 package me.theclashfruit.lattice;
 
+import com.hypixel.hytale.common.util.StringUtil;
 import com.hypixel.hytale.logger.HytaleLogger;
 import com.hypixel.hytale.server.core.event.events.player.PlayerChatEvent;
 import com.hypixel.hytale.server.core.event.events.player.PlayerDisconnectEvent;
@@ -14,6 +15,8 @@ import me.theclashfruit.lattice.util.store.DiscordDataStore;
 import me.theclashfruit.lattice.util.LatticeConfig;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
+import net.dv8tion.jda.api.interactions.commands.OptionType;
+import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 
 import javax.annotation.Nonnull;
@@ -26,8 +29,6 @@ public class LatticePlugin extends JavaPlugin {
 
     public static HytaleLogger LOGGER;
 
-    private static LatticePlugin instance;
-
     public LatticePlugin(@Nonnull JavaPluginInit init) {
         super(init);
 
@@ -35,8 +36,6 @@ public class LatticePlugin extends JavaPlugin {
 
         config = this.withConfig("Lattice", LatticeConfig.CODEC);
         connections = this.withConfig("DiscordData", DiscordDataStore.CODEC);
-
-        instance = this;
     }
 
     @Override
@@ -56,7 +55,7 @@ public class LatticePlugin extends JavaPlugin {
             LOGGER.atWarning().log("Please set `Discord.Token` to your token!");
             return;
         }
-        if (conf.discord.channel_id.isEmpty()) {
+        if (conf.discord.channel_id.isEmpty() || !StringUtil.isNumericString(conf.discord.channel_id)) {
             LOGGER.atWarning().log("Please set `Discord.ChannelId` to your channel's id!");
             return;
         }

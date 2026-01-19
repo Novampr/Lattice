@@ -33,6 +33,8 @@ The config file should look something like this:
 
 Create your bot on the discord developer portal and also enable `Message Content Intent` for your bot then paste the token into the config where it says `your_token_here`.
 
+Don't forget to invite your bot, here is a template for the invite link: `https://discord.com/oauth2/authorize?client_id={client_id}&permissions=536938496&scope=bot+applications.commands`; Just replace `{client_id}` with your bot's client id.
+
 ### 3. Create a Channel & Webhook
 
 Create your channel and copy its id into the channel id in the config. Then go into the settings for the channel and create a webhook and copy it's url, which should look something like `https://discord.com/api/webhooks/1460971511903948851/ydte1zUhNKBVzvpUlsAyGDrdAb83HvYRIl_KiDYhgKJ1x4kgMNCfMfAl3TGklrsegGmo`[^1], copy it's numerical part, here it's `1460971511903948851` and paste it into the config for the `WebhookId`.
