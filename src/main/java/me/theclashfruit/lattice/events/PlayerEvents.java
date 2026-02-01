@@ -52,6 +52,8 @@ public class PlayerEvents {
             }
 
             hook.flatMap(h -> h.sendMessage(content).setUsername(user.getEffectiveName()).setAvatarUrl(user.getAvatarUrl())).queue();
+        } else if (LatticePlugin.config.get().discord.messages.useHyvatarAvatars) {
+            hook.flatMap(h -> h.sendMessage(content).setUsername(sender.getUsername()).setAvatarUrl("https://hyvatar.io/render/%s?size=256".formatted(sender.getUsername()))).queue();
         } else {
             hook.flatMap(h -> h.sendMessage(content).setUsername(sender.getUsername())).queue();
         }

@@ -99,10 +99,18 @@ public class LatticeConfig {
                             (config, info) -> config.leave
                     )
                     .add()
+                    .append(
+                            new KeyedCodec<>("UseHyvatarAvatars", BuilderCodec.BOOLEAN),
+                            (config, value, info) -> config.useHyvatarAvatars = value,
+                            (config, info) -> config.useHyvatarAvatars
+                    )
+                    .add()
                     .build();
 
             public String join = "%s joined %s.";
             public String leave = "%s left.";
+
+            public boolean useHyvatarAvatars = false;
         }
     }
 }

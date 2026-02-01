@@ -1,7 +1,7 @@
 plugins {
     id 'java'
 
-        id 'com.gradleup.shadow' version '9.3.1'
+        id 'com.gradleup.shadow' version '9.2.2'
 }
 
 version = project.mod_version
@@ -26,7 +26,7 @@ repositories {
 }
 
 dependencies {
-    compileOnly("com.hypixel.hytale:Server:2026.01.22-6f8bdbdc4")
+    compileOnly("com.hypixel.hytale:Server:2026.01.27-734d39026")
 
     implementation("net.dv8tion:JDA:$jda_version") {
         exclude module: 'opus-java'
